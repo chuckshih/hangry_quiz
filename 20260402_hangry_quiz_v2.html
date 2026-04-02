@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>餓怒症 閱讀自測</title>
+<style>
+:root {
+  --bg: #faf7f2;
+  --ink: #1a1410;
+  --accent: #c0392b;
+  --accent-light: #f9ede9;
+  --correct: #2d6a4f;
+  --correct-light: #e8f5ee;
+  --wrong: #c0392b;
+  --wrong-light: #fdecea;
+  --muted: #8a7968;
+  --border: #e0d8cc;
+  --card: #ffffff;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: "PingFang TC", "Microsoft JhengHei", serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  padding: 32px 16px 80px;
+}
+.header {
+  max-width: 680px;
+  margin: 0 auto 40px;
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 20px;
+}
+.header .label { font-size: 11px; letter-spacing: 0.15em; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+.header h1 { font-size: 38px; font-weight: 900; line-height: 1.1; }
+.header h1 span { color: var(--accent); }
+.header .meta { margin-top: 10px; font-size: 12px; color: var(--muted); display: flex; gap: 20px; flex-wrap: wrap; }
+
+.progress-bar-wrap {
+  max-width: 680px;
+  margin: 0 auto 32px;
+  background: var(--ink);
+  border-radius: 6px;
+  padding: 14px 20px;
+  position: sticky;
+  top: 12px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.progress-label { font-size: 12px; color: #a09080; white-space: nowrap; }
+.progress-bar { flex: 1; height: 4px; background: #3a3028; border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s ease; width: 0%; }
+.progress-count { font-size: 13px; color: var(--bg); font-weight: 700; white-space: nowrap; }
+
+.quiz-container { max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+
+.question-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.question-card.unanswered-err { border-color: #e8a000; animation: shake 0.3s ease; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+
+.question-header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 14px; }
+.question-num { font-size: 11px; color: var(--accent); background: var(--accent-light); padding: 3px 8px; border-radius: 2px; white-space: nowrap; margin-top: 2px; letter-spacing: 0.05em; flex-shrink: 0; }
+.question-num.answered-mark { background: #e8f5ee; color: var(--correct); }
+.question-text { font-size: 15px; line-height: 1.7; font-weight: 700; }
+
+.options { padding: 14px 20px; display: flex; flex-direction: column; gap: 8px; }
+.option { display: flex; align-items: flex-start; gap: 12px; padding: 11px 13px; border: 1.5px solid var(--border); border-radius: 6px; cursor: pointer; transition: all 0.15s; user-select: none; }
+.option:hover { border-color: var(--ink); background: #f5f0e8; }
+.option.selected { border-color: var(--ink); background: #f5f0e8; }
+.option.correct { border-color: var(--correct); background: var(--correct-light); }
+.option.wrong { border-color: var(--wrong); background: var(--wrong-light); }
+.option.disabled { cursor: default; pointer-events: none; }
+.option-letter { font-size: 11px; font-weight: 700; width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--muted); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; color: var(--muted); transition: all 0.15s; }
+.option.selected .option-letter { border-color: var(--ink); color: var(--ink); }
+.option.correct .option-letter { background: var(--correct); border-color: var(--correct); color: white; }
+.option.wrong .option-letter { background: var(--wrong); border-color: var(--wrong); color: white; }
+.option-text { font-size: 14px; line-height: 1.6; }
+
+.explanation { margin: 0 20px 18px; padding: 14px; border-radius: 6px; font-size: 13.5px; line-height: 1.8; display: none; animation: fadeIn 0.3s ease; }
+.explanation.correct-exp { background: var(--correct-light); border-left: 3px solid var(--correct); color: #1a4030; }
+.explanation.wrong-exp { background: var(--wrong-light); border-left: 3px solid var(--wrong); color: #5a1010; }
+.exp-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; opacity: 0.7; }
+.correct-answer { font-weight: 700; margin-bottom: 8px; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+.submit-section {
+  max-width: 680px;
+  margin: 36px auto 0;
+  text-align: center;
+}
+.submit-all-btn {
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  padding: 14px 40px;
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  width: 100%;
+  max-width: 320px;
+}
+.submit-all-btn:hover { opacity: 0.8; }
+.submit-hint { margin-top: 10px; font-size: 12px; color: var(--muted); }
+
+.final-result {
+  max-width: 680px;
+  margin: 40px auto 0;
+  padding: 40px 32px;
+  background: var(--ink);
+  color: var(--bg);
+  border-radius: 8px;
+  text-align: center;
+  display: none;
+  animation: fadeIn 0.5s ease;
+}
+.result-label { font-size: 11px; letter-spacing: 0.15em; color: #a09080; text-transform: uppercase; margin-bottom: 14px; }
+.result-grade { font-size: 72px; font-weight: 900; color: var(--accent); line-height: 1; margin-bottom: 4px; }
+.result-score { font-size: 14px; color: #a09080; margin-bottom: 6px; }
+.result-pct { font-size: 13px; color: #7a6a5a; margin-bottom: 20px; }
+.result-message { font-size: 15px; line-height: 1.8; color: #d4c8b8; }
+.reset-btn { margin-top: 24px; font-size: 12px; letter-spacing: 0.1em; padding: 10px 28px; background: transparent; color: var(--bg); border: 1px solid #5a4a3a; border-radius: 4px; cursor: pointer; }
+.reset-btn:hover { background: #2a2018; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="label">閱讀自測 · Knowledge Quiz</div>
+  <h1>餓<span>怒</span>症</h1>
+  <div class="meta">
+    <span>13 題</span>
+    <span>依閱讀順序排列</span>
+    <span>全部作答後一次對答案</span>
+  </div>
+</div>
+
+<div class="progress-bar-wrap">
+  <span class="progress-label">已選擇</span>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <span class="progress-count" id="progressCount">0 / 13</span>
+</div>
+
+<div class="quiz-container" id="quizContainer"></div>
+
+<div class="submit-section" id="submitSection">
+  <button class="submit-all-btn" onclick="submitAll()">對答案</button>
+  <div class="submit-hint" id="submitHint">還有 13 題未作答</div>
+</div>
+
+<div class="final-result" id="finalResult">
+  <div class="result-label">測驗結果</div>
+  <div class="result-grade" id="finalGrade"></div>
+  <div class="result-score" id="finalScore"></div>
+  <div class="result-pct" id="finalPct"></div>
+  <div class="result-message" id="finalMessage"></div>
+  <button class="reset-btn" onclick="resetQuiz()">重新作答</button>
+</div>
+
+<script>
+var Q = [
+  { q: "Hangry 是哪兩個字的複合字？", o: ["Handsome + Century", "Hand + Cry", "Hunt + Try", "Hungry + Angry"], a: 3, e: "Hangry = Hungry + Angry，餓了就發脾氣。這個字完美捕捉了餓怒症的本質——飢餓引發的情緒失控。" },
+  { q: "下列何者不是較容易發生餓怒症的對象？", o: ["注重飲食的人", "過度節食的人", "營養不均衡的人", "壓力太大的人"], a: 0, e: "注重飲食的人不會放任自己餓到產生怒火。餓怒症的觸發前提是「允許自己餓」，注重飲食的人會主動避免這個狀態發生。" },
+  { q: "下列何者最不在餓怒影響的範疇？", o: ["嗅覺感知", "人際關係", "決策品質", "自我評判"], a: 0, e: "嗅覺在餓的時候反而會變得更敏銳——演化上，飢餓時需要更靈敏的嗅覺來尋找食物。餓怒症的核心影響是情緒調節、決策品質與人際互動等認知層面。" },
+  { q: "下列何者是餓怒循環的環節之一？", o: ["「戰」或「逃」反應", "飽食性悔恨", "適當的飲食計劃", "血糖的週期性波動"], a: 1, e: "飽食性悔恨才是循環的關鍵環節：餓到情緒失控 → 暴食 → 飽食性悔恨 → 節制飲食 → 又餓 → 又怒。這是一個會自我強化的迴圈。" },
+  { q: "下列何者是餓怒管理的步驟？", o: ["避免過度饑餓", "辨識饑餓的類型", "正念的飲食習慣", "以上皆是"], a: 3, e: "三者皆是餓怒管理的重要步驟。避免過度飢餓、辨識飢餓類型（生理餓 vs 心理餓）、培養正念飲食習慣，缺一不可。" },
+  { q: "下列敘述何者有誤？", o: ["壓力是餓怒症的多種成因之一", "改善睡眠品質有望緩解餓怒症", "大腦在餓怒症的管理上比腸道重要", "與飲食無關的日常作息會影響餓怒症發作"], a: 2, e: "腸腦軸線（Gut-Brain Axis）顯示腸道對情緒有重要且直接的影響，不能說大腦比腸道重要。兩者相互影響，是雙向的調控關係。" },
+  { q: "下列應對餓怒症的方式何者錯誤？", o: ["用精美的餐具盛放食物產生儀式感", "視覺上讓自己產生吃了很多的錯覺", "將食物放在伸手可及之處達到脫敏效果", "預先處理蔬菜和水果以方便食用"], a: 2, e: "「脫敏」是這個選項的語言陷阱。食物隨手可及反而降低飲食的意識門檻，讓人不加思考就吃，與餓怒管理「有意識飲食」的方向完全相反。" },
+  { q: "下列敘述何者正確？", o: ["沒事多喝水能有效改善餓怒狀態", "糖可以作為餓怒狀態的應急手段之一", "垃圾食物與餓怒狀態無直接關聯", "以上皆否"], a: 0, e: "下丘腦同時負責調節飢餓和口渴信號，兩個信號容易混淆。很多時候以為是餓，其實是渴。喝水能解決這種「假性飢餓」，進而緩解餓怒狀態。" },
+  { q: "下列名詞解釋的配對何者正確？", o: ["「零食意外」→ 誤把正餐當成零食吃掉", "「心理餓」→ 攝取熱量不足導致的饑餓", "「正念飲食」→ 用餐時內心想著放鬆的悠閒時刻", "「餓怒預警」→ 時刻留意飢餓狀態並防範於未然"], a: 3, e: "零食意外 → 在不知不覺間攝取過量零食；心理餓 → 有別於生理飢餓的心理性需求；正念飲食 → 專注於當前飲食的美好感受（不只是放鬆）；餓怒預警 → 主動監測飢餓狀態以防範情緒失控。" },
+  { q: "下列關於營養素缺乏的餓怒，何者正確？", o: ["缺鐵的人精神不濟時最適合喝咖啡", "肝醣存量不足的人需注重豐盛的午餐", "睡眠不足的人可多攝取酸櫻桃和奇異果", "大量運動的人宜避免高熱量的飲食"], a: 2, e: "A：咖啡因會抑制鐵質吸收。B：肝醣消耗在一夜睡眠後，應補充早餐而非午餐。D：大量運動消耗大，需要足夠熱量。C：酸櫻桃和奇異果含天然褪黑激素，有助改善睡眠品質。" },
+  { q: "下列敘述何者最不符合正念飲食？", o: ["專注於餐前處理多種食材的過程", "專注於餐時咀嚼和吞嚥食物的過程", "專注於餐時品味食物口感的過程", "專注於規劃餐後休閒娛樂的過程"], a: 3, e: "正念飲食是「專注於食物本身」，從餐前準備到餐後回憶都是一環。D在用餐時把注意力帶到餐後的娛樂規劃，心已經離開食物，完全脫離正念飲食的核心。" },
+  { q: "綜合本書的觀念，下列何者是錯誤的飲食策略？", o: ["讓喝水習慣與日常作息互相綁定", "在攝取零食時保有選擇的餘地", "在餓怒時發揮想像力勾勒飽足的感受", "放棄大部分有關節食的思維邏輯"], a: 2, e: "餓怒是身體發出的真實生理信號，用想像壓制它是在對抗身體，而非接納與回應。本書的核心精神是「聆聽並回應身體信號」。" },
+  { q: "綜合本書觀念，何者是正確的飲食觀念？", o: ["用餐時感官全開，仔細品味食物的色香味", "吃完零食後立即丟棄外包裝，避免後續誘惑", "飲食的內容（What）比起氛圍（Where）和原因（Why）更為重要", "飲食時應避免停頓，減少用餐以外的干擾"], a: 0, e: "B：應暫時保留外包裝提醒自己已吃過，避免越吃越上頭。C：What、Where、Why 同等重要，書中甚至最強調 Why。D：適當停頓是傾聽身體飽足信號的關鍵。A：感官全開品味食物正是正念飲食的實踐。" }
+];
+
+var GRADES = [
+  { min: 13, grade: "A++", msg: "完全吸收。你不只讀了這本書，你理解了它。" },
+  { min: 12, grade: "A+",  msg: "幾乎完美。這本書的核心觀念你都內化了。" },
+  { min: 11, grade: "A",   msg: "掌握紮實。少數細節差一點，整體理解優秀。" },
+  { min: 10, grade: "A-",  msg: "理解良好。有幾個概念還有加深的空間。" },
+  { min: 9,  grade: "B+",  msg: "吸收不錯。主要觀念到位，部分機制需要再想想。" },
+  { min: 8,  grade: "B",   msg: "基礎穩固。有幾題的陷阱讓你踩到了。" },
+  { min: 7,  grade: "B-",  msg: "大方向對，但一些關鍵細節還沒完全消化。" },
+  { min: 6,  grade: "C+",  msg: "一半以上答對，繼續往前讀會更清楚。" },
+  { min: 0,  grade: "C-",  msg: "這次測驗標記了你需要加強的地方，這才是它最大的價值。" }
+];
+
+var selected = new Array(Q.length).fill(-1);
+var submitted = false;
+
+function buildQuiz() {
+  var c = document.getElementById('quizContainer');
+  c.innerHTML = '';
+  var letters = ['A','B','C','D'];
+  for (var i = 0; i < Q.length; i++) {
+    var opts = '';
+    for (var j = 0; j < Q[i].o.length; j++) {
+      opts += '<div class="option" id="opt-'+i+'-'+j+'" onclick="selectOpt('+i+','+j+')">' +
+        '<div class="option-letter">'+letters[j]+'</div>' +
+        '<div class="option-text">'+Q[i].o[j]+'</div>' +
+        '</div>';
+    }
+    var card = document.createElement('div');
+    card.className = 'question-card';
+    card.id = 'card-'+i;
+    card.innerHTML =
+      '<div class="question-header">' +
+        '<span class="question-num" id="qnum-'+i+'">Q' + (i<9?'0':'') + (i+1) + '</span>' +
+        '<div class="question-text">'+Q[i].q+'</div>' +
+      '</div>' +
+      '<div class="options" id="opts-'+i+'">'+opts+'</div>' +
+      '<div class="explanation" id="exp-'+i+'"></div>';
+    c.appendChild(card);
+  }
+  updateProgress();
+}
+
+function selectOpt(qi, oi) {
+  if (submitted) return;
+  var opts = document.querySelectorAll('#opts-'+qi+' .option');
+  for (var k = 0; k < opts.length; k++) opts[k].classList.remove('selected');
+  document.getElementById('opt-'+qi+'-'+oi).classList.add('selected');
+  var wasUnanswered = selected[qi] === -1;
+  selected[qi] = oi;
+  if (wasUnanswered) {
+    document.getElementById('qnum-'+qi).classList.add('answered-mark');
+    document.getElementById('card-'+qi).classList.remove('unanswered-err');
+  }
+  updateProgress();
+}
+
+function updateProgress() {
+  var done = 0;
+  for (var i = 0; i < selected.length; i++) if (selected[i] !== -1) done++;
+  var remaining = Q.length - done;
+  document.getElementById('progressFill').style.width = Math.round((done/Q.length)*100) + '%';
+  document.getElementById('progressCount').textContent = done + ' / ' + Q.length;
+  document.getElementById('submitHint').textContent = remaining === 0 ? '全部作答完成，可以對答案了！' : '還有 ' + remaining + ' 題未作答';
+}
+
+function submitAll() {
+  if (submitted) return;
+  var unanswered = [];
+  for (var i = 0; i < Q.length; i++) if (selected[i] === -1) unanswered.push(i);
+  if (unanswered.length > 0) {
+    for (var k = 0; k < unanswered.length; k++) {
+      var card = document.getElementById('card-'+unanswered[k]);
+      card.classList.add('unanswered-err');
+    }
+    document.getElementById('card-'+unanswered[0]).scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.getElementById('submitHint').textContent = '還有 ' + unanswered.length + ' 題未作答，請先完成所有題目';
+    return;
+  }
+  submitted = true;
+  var correct = 0;
+  var letters = ['A','B','C','D'];
+  for (var i = 0; i < Q.length; i++) {
+    var s = selected[i];
+    var ok = s === Q[i].a;
+    if (ok) correct++;
+    var opts = document.querySelectorAll('#opts-'+i+' .option');
+    for (var j = 0; j < opts.length; j++) {
+      opts[j].classList.add('disabled');
+      if (j === Q[i].a) opts[j].classList.add('correct');
+      else if (j === s && !ok) opts[j].classList.add('wrong');
+    }
+    var exp = document.getElementById('exp-'+i);
+    exp.className = 'explanation ' + (ok ? 'correct-exp' : 'wrong-exp');
+    exp.innerHTML =
+      '<div class="exp-label">' + (ok ? '✓ 答對了' : '✗ 答錯了') + '</div>' +
+      (!ok ? '<div class="correct-answer">正確答案：' + letters[Q[i].a] + '. ' + Q[i].o[Q[i].a] + '</div>' : '') +
+      '<div>' + Q[i].e + '</div>';
+    exp.style.display = 'block';
+  }
+  document.getElementById('submitSection').style.display = 'none';
+  var gradeObj = GRADES[GRADES.length-1];
+  for (var g = 0; g < GRADES.length; g++) {
+    if (correct >= GRADES[g].min) { gradeObj = GRADES[g]; break; }
+  }
+  var pct = Math.round((correct/Q.length)*100);
+  document.getElementById('finalGrade').textContent = gradeObj.grade;
+  document.getElementById('finalScore').textContent = correct + ' / ' + Q.length + ' 題答對';
+  document.getElementById('finalPct').textContent = '正確率 ' + pct + '%';
+  document.getElementById('finalMessage').textContent = gradeObj.msg;
+  var fr = document.getElementById('finalResult');
+  fr.style.display = 'block';
+  fr.scrollIntoView({ behavior: 'smooth' });
+}
+
+function resetQuiz() {
+  selected = new Array(Q.length).fill(-1);
+  submitted = false;
+  document.getElementById('submitSection').style.display = 'block';
+  document.getElementById('finalResult').style.display = 'none';
+  buildQuiz();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+window.onload = function() { buildQuiz(); };
+</script>
+</body>
+</html>
